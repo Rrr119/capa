@@ -28,7 +28,8 @@ import capa.features.extractors.common
 from capa.features.file import Export, Import, Section
 from capa.features.common import OS, FORMAT_ELF, Arch, Format, Feature
 from capa.features.address import NO_ADDRESS, Address, AbsoluteVirtualAddress
-from capa.features.extractors.base_extractor import SampleHashes, StaticFeatureExtractor
+from capa.features.extractors.base_extractor import SampleHashes
+from capa.features.extractors.file_extractor import FileFeatureExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -256,9 +257,9 @@ GLOBAL_HANDLERS = (
 )
 
 
-class ElfFeatureExtractor(StaticFeatureExtractor):
-    def __init__(self, path: Path):
-        super().__init__(SampleHashes.from_bytes(path.read_bytes()))
+class ElfFeatureExtractor(FileFeatureExtractor):
+    def __init__(self, path: Path, **kwargs):
+        super().__init__(SampleHashes.from_bytes(path.read_bytes()), **kwargs)
         self.path: Path = path
         self.elf = ELFFile(io.BytesIO(path.read_bytes()))
 
@@ -268,38 +269,11 @@ class ElfFeatureExtractor(StaticFeatureExtractor):
                 return AbsoluteVirtualAddress(segment.header.p_vaddr)
         return NO_ADDRESS
 
-    def extract_global_features(self) -> Iterator[tuple[Feature, Address]]:
-        buf = self.path.read_bytes()
+    def get_handler_context(self):
+        return {"elf": self.elf, "buf": self.path.read_bytes()}
 
-        for feature, addr in extract_global_features(self.elf, buf):
-            yield feature, addr
+    def get_file_handlers(self):
+        return FILE_HANDLERS
 
-    def extract_file_features(self) -> Iterator[tuple[Feature, Address]]:
-        buf = self.path.read_bytes()
-
-        for feature, addr in extract_file_features(self.elf, buf):
-            yield feature, addr
-
-    def get_functions(self):
-        raise NotImplementedError("ElfFeatureExtractor can only be used to extract file features")
-
-    def extract_function_features(self, fh):
-        raise NotImplementedError("ElfFeatureExtractor can only be used to extract file features")
-
-    def get_basic_blocks(self, fh):
-        raise NotImplementedError("ElfFeatureExtractor can only be used to extract file features")
-
-    def extract_basic_block_features(self, fh, bbh):
-        raise NotImplementedError("ElfFeatureExtractor can only be used to extract file features")
-
-    def get_instructions(self, fh, bbh):
-        raise NotImplementedError("ElfFeatureExtractor can only be used to extract file features")
-
-    def extract_insn_features(self, fh, bbh, ih):
-        raise NotImplementedError("ElfFeatureExtractor can only be used to extract file features")
-
-    def is_library_function(self, addr):
-        raise NotImplementedError("ElfFeatureExtractor can only be used to extract file features")
-
-    def get_function_name(self, addr):
-        raise NotImplementedError("ElfFeatureExtractor can only be used to extract file features")
+    def get_global_handlers(self):
+        return GLOBAL_HANDLERS

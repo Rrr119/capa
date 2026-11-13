@@ -23,7 +23,8 @@ import capa.features.extractors.helpers
 from capa.features.file import Export, Import, Section
 from capa.features.common import OS, ARCH_I386, FORMAT_PE, ARCH_AMD64, OS_WINDOWS, Arch, Format, Characteristic
 from capa.features.address import NO_ADDRESS, FileOffsetAddress, AbsoluteVirtualAddress
-from capa.features.extractors.base_extractor import SampleHashes, StaticFeatureExtractor
+from capa.features.extractors.base_extractor import SampleHashes
+from capa.features.extractors.file_extractor import FileFeatureExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -192,45 +193,20 @@ GLOBAL_HANDLERS = (
 )
 
 
-class PefileFeatureExtractor(StaticFeatureExtractor):
-    def __init__(self, path: Path):
-        super().__init__(hashes=SampleHashes.from_bytes(path.read_bytes()))
+class PefileFeatureExtractor(FileFeatureExtractor):
+    def __init__(self, path: Path, **kwargs):
+        super().__init__(hashes=SampleHashes.from_bytes(path.read_bytes()), **kwargs)
         self.path: Path = path
         self.pe = pefile.PE(str(path))
 
     def get_base_address(self):
         return AbsoluteVirtualAddress(self.pe.OPTIONAL_HEADER.ImageBase)  # type: ignore[union-attr]  # pefile stubs type OPTIONAL_HEADER as Optional
 
-    def extract_global_features(self):
-        buf = Path(self.path).read_bytes()
+    def get_handler_context(self):
+        return {"pe": self.pe, "buf": self.path.read_bytes()}
 
-        yield from extract_global_features(self.pe, buf)
+    def get_file_handlers(self):
+        return FILE_HANDLERS
 
-    def extract_file_features(self):
-        buf = Path(self.path).read_bytes()
-
-        yield from extract_file_features(self.pe, buf)
-
-    def get_functions(self):
-        raise NotImplementedError("PefileFeatureExtract can only be used to extract file features")
-
-    def extract_function_features(self, fh):
-        raise NotImplementedError("PefileFeatureExtract can only be used to extract file features")
-
-    def get_basic_blocks(self, fh):
-        raise NotImplementedError("PefileFeatureExtract can only be used to extract file features")
-
-    def extract_basic_block_features(self, fh, bbh):
-        raise NotImplementedError("PefileFeatureExtract can only be used to extract file features")
-
-    def get_instructions(self, fh, bbh):
-        raise NotImplementedError("PefileFeatureExtract can only be used to extract file features")
-
-    def extract_insn_features(self, fh, bbh, ih):
-        raise NotImplementedError("PefileFeatureExtract can only be used to extract file features")
-
-    def is_library_function(self, addr):
-        raise NotImplementedError("PefileFeatureExtract can only be used to extract file features")
-
-    def get_function_name(self, addr):
-        raise NotImplementedError("PefileFeatureExtract can only be used to extract file features")
+    def get_global_handlers(self):
+        return GLOBAL_HANDLERS

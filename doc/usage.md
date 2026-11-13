@@ -43,6 +43,9 @@ which threads perform what actions (encrypt/decrypt data, initiate a connection,
 ### IDA Pro plugin: capa explorer
 Please check out the [capa explorer documentation](/capa/ida/plugin/README.md).
 
+### developing a file-format feature extractor
+Please check out the [extractor development documentation](/doc/extractors.md) for how to add support for a new file format, including the unified timeout, error handling, and cancellation policy.
+
 ### save time by reusing .viv files
 Set the environment variable `CAPA_SAVE_WORKSPACE` to instruct the underlying analysis engine to 
 cache its intermediate results to the file system. For example, vivisect will create `.viv` files.

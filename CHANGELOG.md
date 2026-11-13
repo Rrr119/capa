@@ -24,6 +24,7 @@
 ### capa Explorer IDA Pro plugin
 
 ### Development
+- extractors: add FileFeatureExtractor base class unifying timeout, error handling, and cancellation across the PE, ELF, and .NET file extractors
 - tests: use user leaf function 0x401517 in mimikatz calls-from fixtures for IDA 9.5 compatibility @mr-tz
 - ci: key setup-uv cache on pyproject.toml in idalib-tests @mr-tz
 - tests: compare decoded freeze documents in snapshot tests so zlib-ng platforms pass @zxan #3229

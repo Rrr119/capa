@@ -41,7 +41,7 @@ from capa.features.common import (
 )
 from capa.features.address import NO_ADDRESS, Address, DNTokenAddress
 from capa.features.extractors.dnfile.types import DnType
-from capa.features.extractors.base_extractor import SampleHashes, StaticFeatureExtractor
+from capa.features.extractors.base_extractor import SampleHashes
 from capa.features.extractors.dnfile.helpers import (
     iter_dotnet_table,
     load_dotnet_image,
@@ -54,6 +54,7 @@ from capa.features.extractors.dnfile.helpers import (
     get_dotnet_unmanaged_imports,
     get_dotnet_nested_class_table_index,
 )
+from capa.features.extractors.file_extractor import FileFeatureExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -191,14 +192,23 @@ GLOBAL_HANDLERS = (
 )
 
 
-class DotnetFileFeatureExtractor(StaticFeatureExtractor):
-    def __init__(self, path: Path):
-        super().__init__(hashes=SampleHashes.from_bytes(path.read_bytes()))
+class DotnetFileFeatureExtractor(FileFeatureExtractor):
+    def __init__(self, path: Path, **kwargs):
+        super().__init__(hashes=SampleHashes.from_bytes(path.read_bytes()), **kwargs)
         self.path = path
         self.pe = load_dotnet_image(path)
 
     def get_base_address(self):
         return NO_ADDRESS
+
+    def get_handler_context(self):
+        return {"pe": self.pe}
+
+    def get_file_handlers(self):
+        return FILE_HANDLERS
+
+    def get_global_handlers(self):
+        return GLOBAL_HANDLERS
 
     def get_entry_point(self) -> int:
         # self.pe.net.Flags.CLT_NATIVE_ENTRYPOINT
@@ -208,12 +218,6 @@ class DotnetFileFeatureExtractor(StaticFeatureExtractor):
         assert self.pe.net.struct is not None
 
         return self.pe.net.struct.EntryPointTokenOrRva
-
-    def extract_global_features(self):
-        yield from extract_global_features(self.pe)
-
-    def extract_file_features(self):
-        yield from extract_file_features(self.pe)
 
     def is_dotnet_file(self) -> bool:
         return bool(self.pe.net)
@@ -242,27 +246,3 @@ class DotnetFileFeatureExtractor(StaticFeatureExtractor):
         assert isinstance(vbuf, bytes)
 
         return vbuf.rstrip(b"\x00").decode("utf-8")
-
-    def get_functions(self):
-        raise NotImplementedError("DotnetFileFeatureExtractor can only be used to extract file features")
-
-    def extract_function_features(self, fh):
-        raise NotImplementedError("DotnetFileFeatureExtractor can only be used to extract file features")
-
-    def get_basic_blocks(self, fh):
-        raise NotImplementedError("DotnetFileFeatureExtractor can only be used to extract file features")
-
-    def extract_basic_block_features(self, fh, bbh):
-        raise NotImplementedError("DotnetFileFeatureExtractor can only be used to extract file features")
-
-    def get_instructions(self, fh, bbh):
-        raise NotImplementedError("DotnetFileFeatureExtractor can only be used to extract file features")
-
-    def extract_insn_features(self, fh, bbh, ih):
-        raise NotImplementedError("DotnetFileFeatureExtractor can only be used to extract file features")
-
-    def is_library_function(self, addr):
-        raise NotImplementedError("DotnetFileFeatureExtractor can only be used to extract file features")
-
-    def get_function_name(self, addr):
-        raise NotImplementedError("DotnetFileFeatureExtractor can only be used to extract file features")

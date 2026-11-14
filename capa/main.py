@@ -945,6 +945,13 @@ def main(argv: Optional[list[str]] = None):
     if argv is None:
         argv = sys.argv[1:]
 
+    if argv and argv[0] == "triage":
+        # `triage` is a batch-oriented command with its own argument surface.
+        # Keep the existing single-sample interface unchanged for compatibility.
+        import capa.triage
+
+        return capa.triage.main(argv[1:])
+
     desc = "The FLARE team's open-source tool to identify capabilities in executable files."
     epilog = textwrap.dedent("""
         By default, capa uses a default set of embedded rules.
@@ -973,6 +980,9 @@ def main(argv: Optional[list[str]] = None):
 
           filter rules by meta fields, e.g. rule name or namespace
             capa -t "create TCP socket" suspicious.exe
+
+          batch triage a directory (JSON + Markdown + incremental state)
+            capa triage ./samples -o ./triage-output
          """)
 
     parser = argparse.ArgumentParser(

@@ -19,6 +19,11 @@ By default, capa shows only *top-level* rule matches: capabilities that are not 
 
 ## tips and tricks
 
+### batch triage directories
+Use `capa triage` to scan a directory of PE/ELF samples and produce cumulative
+JSON and Markdown reports. It supports incremental runs, retries, failure logs,
+and red high-risk markers. See [batch triage](triage.md) for the full workflow.
+
 ### only run selected rules
 Use the `-t` option to run rules with the given metadata value (see the rule fields `rule.meta.*`).
 For example, `capa -t william.ballenthin@mandiant.com` runs rules that reference Willi's email address (probably as the author), or

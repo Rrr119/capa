@@ -76,6 +76,7 @@ lint.ignore = [
     "SIM118", # Use key not in dict instead of key not in dict.keys()
     "UP024", # Replace aliased errors with OSError
     "UP045", # Use X | None for optional type annotations
+    "UP017", # datetime.UTC requires Python 3.11; capa supports Python 3.10
     "SIM103", # Return negated condition directly
     "UP007", # Use X | Y for union type annotations
     "B904", # Raise exceptions within except clause using raise from
@@ -87,6 +88,7 @@ lint.ignore = [
 # T201 print found schemas for scripts and entrypoints
 "scripts/*" = ["T201"]
 "capa/main.py" = ["T201"]
+"capa/triage.py" = ["T201"]
 "capa/features/extractors/binja/find_binja_api.py" = ["T201"]
 "tests/conftest.py" = ["I001"] # Suppress import sorting to preserve explicit legacy fixture loading order
 "*_pb2.py" = ["ALL"] # Completely disable all formatting for auto-generated protocol buffer files
